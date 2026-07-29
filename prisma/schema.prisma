@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Queue table for incoming messages from Telegram, Apple Watch, and web.
+/// The local agent polls for unprocessed events and handles them.
+model InboxEvent {
+  id          String    @id @default(cuid())
+  source      String    // "telegram" | "apple_watch" | "web"
+  chatId      BigInt
+  userId      BigInt?
+  username    String?
+  payload     Json      // Raw message payload (e.g. Telegram update object)
+  processed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([processed, createdAt])
+  @@map("inbox_events")
+}

@@ -40,3 +40,51 @@ model ConversationLog {
   @@index([chatId, createdAt])
   @@map("conversation_logs")
 }
+
+/// A single body-weight reading, extracted from chat (e.g. "bugün 82 kilo
+/// geldim") or added manually from the dashboard.
+model WeightEntry {
+  id        String   @id @default(cuid())
+  weightKg  Float
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("weight_entries")
+}
+
+/// A single logged food/meal entry, extracted from chat. Calories are either
+/// user-stated or estimated by the coach from the description.
+model CalorieEntry {
+  id          String   @id @default(cuid())
+  description String
+  calories    Int
+  macros      Json?    // {protein?, carbs?, fat?} in grams
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("calorie_entries")
+}
+
+/// A logged workout session (what was actually done, not a suggested plan),
+/// extracted from chat.
+model WorkoutProgram {
+  id        String   @id @default(cuid())
+  exercises Json     // [{name, sets, reps, notes?}]
+  feedback  String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("workout_programs")
+}
+
+/// Singleton row (id is always "singleton") holding a Gemini-generated summary
+/// of the user's tone/exercise preferences and adherence patterns, refreshed
+/// weekly by src/agent/summarize.ts and injected into every coach reply.
+model StyleProfile {
+  id        String   @id @default("singleton")
+  summary   Json
+  updatedAt DateTime @updatedAt
+
+  @@map("style_profiles")
+}

@@ -9,6 +9,7 @@
     "lint": "next lint",
     "agent:poll": "npx tsx src/agent/poll.ts",
     "agent:start": "npx prisma migrate deploy && npx tsx src/agent/poll.ts",
+    "agent:summarize": "npx tsx src/agent/summarize.ts",
     "postinstall": "npx prisma generate"
   },
   "dependencies": {
@@ -19,7 +20,8 @@
     "pg": "^8.22.0",
     "prisma": "^7.9.1",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@types/node": "^20",

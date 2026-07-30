@@ -1,12 +1,15 @@
 /**
- * Local polling agent — Sprint 2
+ * Local polling agent — Sprint 2 + 3 + 4
  *
  * Polls the InboxEvent table for unprocessed events and, for each one:
  *   (a) gathers the last N ConversationLog records for that chat as context,
- *   (b) asks Gemini for a hypertrophy-coach reply (SKILL.md as systemInstruction),
- *   (c) sends the reply to the user via Telegram sendMessage,
- *   (d) writes both the user message and the reply to ConversationLog (memory),
- *   (e) marks the event processed=true.
+ *   (b) asks Gemini for a hypertrophy-coach reply (SKILL.md as systemInstruction,
+ *       plus the learned StyleProfile summary if one exists),
+ *   (c) executes any weight/calorie/workout logging Gemini decides to do
+ *       (function calling — see src/agent/logging.ts),
+ *   (d) sends the reply to the user via Telegram sendMessage,
+ *   (e) writes both the user message and the reply to ConversationLog (memory),
+ *   (f) marks the event processed=true.
  *
  * On a Gemini rate limit (429) or transient failure the event is left
  * processed=false and retried with exponential backoff. Errors are never
@@ -27,6 +30,7 @@ import {
   type HistoryTurn,
 } from "./gemini";
 import { sendTelegramMessage } from "./telegram";
+import { executeLoggingFunctionCall } from "./logging";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -71,16 +75,28 @@ async function loadHistory(chatId: bigint): Promise<HistoryTurn[]> {
     }));
 }
 
+/** Loads the learned StyleProfile summary (Sprint 4), if one has been generated yet. */
+async function loadStyleProfileSummary(): Promise<string | null> {
+  const profile = await prisma.styleProfile.findUnique({
+    where: { id: "singleton" },
+  });
+  return profile ? JSON.stringify(profile.summary) : null;
+}
+
 /** Calls Gemini, retrying retryable failures with exponential backoff. */
 async function generateWithBackoff(
   userMessage: string,
-  history: HistoryTurn[]
+  history: HistoryTurn[],
+  styleProfileSummary: string | null
 ): Promise<string> {
   let attempt = 0;
   for (;;) {
     attempt += 1;
     try {
-      return await generateCoachReply(userMessage, history);
+      return await generateCoachReply(userMessage, history, {
+        executeFunctionCall: (call) => executeLoggingFunctionCall(prisma, call),
+        styleProfileSummary,
+      });
     } catch (error) {
       const retryable = error instanceof GeminiRetryableError;
       if (!retryable || attempt >= MAX_GEMINI_ATTEMPTS) {
@@ -104,7 +120,10 @@ type EventRow = Awaited<
  * Processes one event. Returns true if handled (event should be considered
  * done), or throws a GeminiRetryableError to signal a global back-off.
  */
-async function processEvent(event: EventRow): Promise<void> {
+async function processEvent(
+  event: EventRow,
+  styleProfileSummary: string | null
+): Promise<void> {
   const text = extractMessageText(event.payload);
 
   // Non-text messages (photos, stickers, etc.) are out of scope this sprint.
@@ -123,7 +142,7 @@ async function processEvent(event: EventRow): Promise<void> {
   );
 
   const history = await loadHistory(event.chatId);
-  const reply = await generateWithBackoff(text, history);
+  const reply = await generateWithBackoff(text, history, styleProfileSummary);
 
   // Send to the user first, so we only mark the event done once it's delivered.
   await sendTelegramMessage(event.chatId, reply);
@@ -156,9 +175,12 @@ async function pollUnprocessedEvents(): Promise<void> {
     return;
   }
 
+  // Loaded once per batch — freshness within a single 5s cycle doesn't matter.
+  const styleProfileSummary = await loadStyleProfileSummary();
+
   for (const event of events) {
     try {
-      await processEvent(event);
+      await processEvent(event, styleProfileSummary);
     } catch (error) {
       if (error instanceof GeminiRetryableError) {
         // Rate limit / transient failure persisted through all retries.
@@ -178,7 +200,7 @@ async function pollUnprocessedEvents(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log("🏋️ Antrenör Ajanı — Sprint 2 (Gemini)");
+  console.log("🏋️ Antrenör Ajanı — Sprint 2+3+4 (Gemini + tracking + personalization)");
   console.log(`   Model:            ${process.env.GEMINI_MODEL || "gemini-flash-latest"}`);
   console.log(`   Context limit:    ${CONTEXT_MESSAGE_LIMIT} messages`);
   console.log(`   Polling interval: ${POLL_INTERVAL_MS / 1000}s`);

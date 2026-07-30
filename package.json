@@ -5,12 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "npx prisma generate && next build",
-    "start": "next start",
+    "start": "npx prisma migrate deploy && next start",
     "lint": "next lint",
     "agent:poll": "npx tsx src/agent/poll.ts",
+    "agent:start": "npx prisma migrate deploy && npx tsx src/agent/poll.ts",
     "postinstall": "npx prisma generate"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "next": "14.2.35",

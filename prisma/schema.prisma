@@ -25,3 +25,18 @@ model InboxEvent {
   @@index([processed, createdAt])
   @@map("inbox_events")
 }
+
+/// Rolling conversation memory. The agent reads the last N records for a given
+/// chat to keep context across days, and appends both the user's message and
+/// its own reply after every turn.
+model ConversationLog {
+  id        String   @id @default(cuid())
+  chatId    BigInt   // Telegram chat this turn belongs to
+  role      String   // "user" | "assistant"
+  content   String
+  intent    String?  // "workout_request" | "calorie_log" | "chat" | ... (Sprint 3+)
+  createdAt DateTime @default(now())
+
+  @@index([chatId, createdAt])
+  @@map("conversation_logs")
+}

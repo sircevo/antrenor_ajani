@@ -1,5 +1,11 @@
 /**
- * Local polling agent — Sprint 2 + 3 + 4
+ * RETIRED — Telegram polling agent.
+ *
+ * The product moved to the in-app web chat (src/app/api/chat/route.ts). This
+ * file is kept for reference only: nothing runs it, the Railway `agent`
+ * service is stopped, and the Telegram webhook is deregistered. It also had a
+ * concurrency bug (overlapping setInterval cycles could answer the same event
+ * twice) that was never worth fixing once Telegram was dropped.
  *
  * Polls the InboxEvent table for unprocessed events and, for each one:
  *   (a) gathers the last N ConversationLog records for that chat as context,
@@ -26,9 +32,9 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
   generateCoachReply,
-  GeminiRetryableError,
+  ProviderRetryableError as GeminiRetryableError,
   type HistoryTurn,
-} from "./gemini";
+} from "./kimi";
 import { sendTelegramMessage } from "./telegram";
 import { executeLoggingFunctionCall } from "./logging";
 

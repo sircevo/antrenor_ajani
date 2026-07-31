@@ -82,9 +82,27 @@ model WorkoutProgram {
 /// of the user's tone/exercise preferences and adherence patterns, refreshed
 /// weekly by src/agent/summarize.ts and injected into every coach reply.
 model StyleProfile {
-  id        String   @id @default("singleton")
-  summary   Json
-  updatedAt DateTime @updatedAt
+  id                 String   @id @default("singleton")
+  summary            Json
+  onboarded          Boolean  @default(false)
+  tone               String? // "samimi" | "ciddi" | "kurumsal" | "kanka"
+  dailyCalorieTarget Int?
+  proteinTargetG     Int?
+  updatedAt          DateTime @updatedAt
 
   @@map("style_profiles")
+}
+
+/// A training session the coach scheduled for a given day. Distinct from
+/// WorkoutProgram, which records what the user actually did.
+model PlannedWorkout {
+  id        String   @id @default(cuid())
+  date      DateTime
+  title     String // "Push A", "Bacak"
+  exercises Json // [{name, sets, reps, notes?}]
+  status    String   @default("planned") // planned | done | skipped
+  createdAt DateTime @default(now())
+
+  @@index([date])
+  @@map("planned_workouts")
 }

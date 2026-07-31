@@ -2,9 +2,9 @@
  * Weekly personalization job — Sprint 4
  *
  * Reads the last 7 days of ConversationLog/WorkoutProgram/CalorieEntry, asks
- * Gemini for a compact JSON summary of tone preferences, liked/disliked
+ * the model for a compact JSON summary of tone preferences, liked/disliked
  * exercises, adherence notes, and the user's currently-stated goal, then
- * upserts it into the StyleProfile singleton row. src/agent/gemini.ts injects
+ * merges it into the StyleProfile singleton row. src/agent/kimi.ts injects
  * this summary into every future coach reply.
  *
  * This is a one-shot script, meant to be run on a schedule (e.g. a Railway
@@ -17,7 +17,7 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import OpenAI from "openai";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -26,7 +26,8 @@ if (!connectionString) {
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-const DEFAULT_MODEL = "gemini-flash-latest";
+const BASE_URL = "https://api.moonshot.ai/v1";
+const DEFAULT_MODEL = "kimi-k2.6";
 const LOOKBACK_DAYS = 7;
 
 const SUMMARY_PROMPT = `
@@ -42,9 +43,9 @@ Sadece verilen veriden çıkarım yap, veri yoksa ilgili alanı boş bırak. Uyd
 `.trim();
 
 function getApiKey(): string {
-  const key = process.env.GEMINI_API_KEY;
+  const key = process.env.KIMI_API_KEY;
   if (!key) {
-    throw new Error("GEMINI_API_KEY environment variable is not set");
+    throw new Error("KIMI_API_KEY environment variable is not set");
   }
   return key;
 }
@@ -80,43 +81,51 @@ async function main(): Promise<void> {
     return;
   }
 
-  const genAI = new GoogleGenerativeAI(getApiKey());
-  const model = genAI.getGenerativeModel({
-    model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: SchemaType.OBJECT,
-        properties: {
-          tone: { type: SchemaType.STRING },
-          likedExercises: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-          dislikedExercises: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-          adherenceNotes: { type: SchemaType.STRING },
-          currentGoalNotes: { type: SchemaType.STRING },
-        },
-        required: [],
+  const client = new OpenAI({ apiKey: getApiKey(), baseURL: BASE_URL });
+  const model = process.env.KIMI_MODEL || DEFAULT_MODEL;
+
+  const completion = await client.chat.completions.create({
+    model,
+    response_format: { type: "json_object" },
+    messages: [
+      {
+        role: "user",
+        content:
+          `${SUMMARY_PROMPT}\n\n` +
+          `Cevabını yalnızca şu alanları içeren bir JSON nesnesi olarak ver: ` +
+          `tone (string), likedExercises (string dizisi), dislikedExercises (string dizisi), ` +
+          `adherenceNotes (string), currentGoalNotes (string).\n\n` +
+          `VERİ:\n${JSON.stringify(data)}`,
       },
-    },
+    ],
+    // K2-family models burn ~700 reasoning tokens by default even on a plain
+    // extraction task like this; disabling costs nothing in quality here.
+    ...(model.startsWith("kimi-k2") ? { thinking: { type: "disabled" } } : {}),
   });
 
-  const result = await model.generateContent(
-    `${SUMMARY_PROMPT}\n\nVERİ:\n${JSON.stringify(data)}`
-  );
-  const summaryText = result.response.text().trim();
+  const summaryText = (completion.choices[0]?.message?.content ?? "").trim();
 
   let summary: unknown;
   try {
     summary = JSON.parse(summaryText);
   } catch {
-    console.error("[summarize] Gemini geçerli JSON döndürmedi:", summaryText.slice(0, 200));
+    console.error("[summarize] Model geçerli JSON döndürmedi:", summaryText.slice(0, 200));
     await prisma.$disconnect();
     process.exit(1);
   }
 
+  // Preserve onboarding fields captured during the first-run interview; the
+  // weekly summary only refreshes the learned-preference keys.
+  const existing = await prisma.styleProfile.findUnique({ where: { id: "singleton" } });
+  const merged = {
+    ...((existing?.summary as Record<string, unknown>) ?? {}),
+    ...(summary as Record<string, unknown>),
+  };
+
   await prisma.styleProfile.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", summary: summary as never },
-    update: { summary: summary as never },
+    create: { id: "singleton", summary: merged as never },
+    update: { summary: merged as never },
   });
 
   console.log("✅ StyleProfile güncellendi:", JSON.stringify(summary, null, 2));

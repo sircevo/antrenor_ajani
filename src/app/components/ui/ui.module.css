@@ -1,0 +1,257 @@
+/* Shared primitives for the app shell, cards and metrics. */
+
+.screen {
+  max-width: 520px;
+  margin: 0 auto;
+  /* max() keeps the normal 16px in a regular browser tab (where the inset is
+     0) and switches to the Dynamic Island/notch inset once the app runs
+     standalone (Add to Home Screen), where statusBarStyle: black-translucent
+     lets content render behind it otherwise. */
+  padding: max(16px, env(safe-area-inset-top)) 16px
+    calc(var(--nav-height) + env(safe-area-inset-bottom) + 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 100dvh;
+}
+
+/* --- App header --- */
+
+.appBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 8px;
+}
+
+.brandName {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.appBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* --- Page title --- */
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* --- Card --- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* --- Metric card --- */
+
+.metricHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metricValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.metricValue {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.metricUnit {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.metricChart {
+  margin-top: 14px;
+}
+
+.deltaWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(195, 232, 79, 0.14);
+  color: var(--accent);
+}
+
+.deltaWarn {
+  background: rgba(245, 166, 35, 0.14);
+  color: var(--warn);
+}
+
+.deltaCaption {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* --- Small stat tiles --- */
+
+.tileRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tileValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.tileValue {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.tileUnit {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.tileCaption {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.tileAccent {
+  color: var(--accent);
+}
+
+/* Progress bar used by the daily-goal tile */
+.progressTrack {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* Ring used by the streak tile */
+.ring {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.tileHeadRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* --- Insights row --- */
+
+.insightRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.insightCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.insightLabel {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.insightValue {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.insightNote {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* --- Generic list rows --- */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: var(--muted);
+}

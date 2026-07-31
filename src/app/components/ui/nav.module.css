@@ -1,0 +1,53 @@
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+
+  max-width: 520px;
+  margin: 0 auto;
+  /* The safe-area inset must ADD to the content row's height, not eat into it
+     (box-sizing: border-box would otherwise squeeze the 76px content row down
+     to ~42px on notched iPhones once the bottom padding is subtracted). */
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+
+  background: rgba(17, 17, 17, 0.92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 4px;
+}
+
+.active {
+  color: var(--accent);
+}
+
+.fab {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+
+  /* Lifts the button above the bar, matching the mockup. */
+  margin-top: -22px;
+  box-shadow: 0 6px 20px rgba(195, 232, 79, 0.28);
+}

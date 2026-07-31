@@ -1,0 +1,118 @@
+.dayList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.day {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.restDay {
+  opacity: 0.55;
+}
+
+.today {
+  border-color: rgba(195, 232, 79, 0.45);
+  opacity: 1;
+}
+
+.dayHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dateBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 38px;
+  flex-shrink: 0;
+}
+
+.dayNum {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.dayName {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: lowercase;
+}
+
+.dayMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dayTitle {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.dayMeta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.todayTag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0b0b0b;
+  background: var(--accent);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.exerciseList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.exercise {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.exerciseMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* RIR, tempo, dinlenme gibi teknik notlar — hareket adının altına iner. */
+.exerciseNote {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.exerciseMeta {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

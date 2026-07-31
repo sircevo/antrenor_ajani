@@ -1,0 +1,116 @@
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tag {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(195, 232, 79, 0.12);
+  white-space: nowrap;
+}
+
+.empty {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.exerciseList,
+.mealList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.exercise {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.exerciseName {
+  font-weight: 500;
+}
+
+.exerciseMeta {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.meal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.meal:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.mealKcal {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.remaining {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.weightForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.weightForm input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-2);
+  color: var(--text);
+  font-size: 16px; /* keeps iOS Safari from zooming on focus */
+}
+
+.weightForm input::placeholder {
+  color: var(--muted);
+}
+
+.weightForm button {
+  padding: 12px 22px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #0b0b0b;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}

@@ -1,20 +1,16 @@
 # Yayına alma (Railway) — Antrenör Ajanı
 
-Bu bot üç parçadan oluşur; ilk ikisi **bulutta 7/24 açık** olmalı ki
-bilgisayarın kapalıyken de çalışsın, üçüncüsü haftada bir çalışıp kapanır:
+Uygulama artık tek bir web servisidir. Telegram tarafı emekliye ayrıldı
+(`src/agent/poll.ts`, `telegram.ts` ve webhook route'u referans olarak repoda
+duruyor ama çalışmıyor).
 
 | Servis | Ne yapar | Başlatma komutu |
 |---|---|---|
-| **web** | Telegram mesajını karşılar (webhook) + **dashboard**'u (`/`) sunar | `npm run start` |
-| **agent** | Mesajı Gemini ile işler, cevabı Telegram'a gönderir (senin terminalde çalıştırdığın kısım) | `npm run agent:poll` |
-| **summarize** (Cron Job, opsiyonel) | Haftalık olarak konuşma/antrenman geçmişini özetleyip `StyleProfile`'ı günceller | `npm run agent:summarize` |
+| **web** | Tüm uygulama: giriş, sohbet, takvim, panel | `npm run start` |
+| **summarize** (Cron Job, opsiyonel) | Haftalık olarak geçmişi özetleyip `StyleProfile`'ı günceller | `npm run agent:summarize` |
 
-Hepsi **aynı GitHub reposundan** ve **aynı veritabanından** çalışır.
-
-> ⚠️ **Dashboard şu an şifresiz.** `web` servisine public domain verirsen (adım 2.3),
-> kilo/kalori/antrenman geçmişin o URL'ye giden herkese açık olur. Sadece
-> localhost'ta kullanacaksan adım 2.3'ü atlayabilirsin; ileride şifre koruması
-> eklemek istersen haber ver.
+> 🔒 Uygulama tek şifreyle korunuyor (`APP_PASSWORD`). Giriş yaptıktan sonra
+> çerez 60 gün geçerli — telefonda her açtığında şifre sormaz.
 
 ---
 
@@ -61,7 +57,7 @@ tipi var (sürekli açık kalmaz, sadece zamanlanmış saatte çalışır):
    Settings'ten servis tipini Cron Job'a çevir).
 2. Repo: `antrenor_ajani`. **Start Command**: `npm run agent:summarize`.
 3. **Schedule**: örn. `0 6 * * 1` (her Pazartesi 06:00 UTC).
-4. **Variables**: `DATABASE_URL`, `GEMINI_API_KEY`, `GEMINI_MODEL` yeterli
+4. **Variables**: `DATABASE_URL`, `KIMI_API_KEY`, `KIMI_MODEL` yeterli
    (Telegram değişkenlerine gerek yok). Public domain gerekmez.
 
 ## 4. Ortam değişkenleri (her iki servise de)
@@ -69,13 +65,11 @@ tipi var (sürekli açık kalmaz, sadece zamanlanmış saatte çalışır):
 | Değişken | Açıklama |
 |---|---|
 | `DATABASE_URL` | Postgres bağlantısı. Railway Postgres'ten `${{Postgres.DATABASE_URL}}` ile bağla. |
-| `TELEGRAM_BOT_TOKEN` | BotFather'dan aldığın bot token'ı. |
-| `TELEGRAM_WEBHOOK_SECRET` | Kendi belirlediğin gizli anahtar (webhook doğrulaması için). |
-| `GEMINI_API_KEY` | Google Gemini API anahtarı. |
-| `GEMINI_MODEL` | `gemini-flash-latest` |
+| `KIMI_API_KEY` | Moonshot (Kimi) API anahtarı. |
+| `KIMI_MODEL` | `kimi-k2.6` |
+| `APP_PASSWORD` | Uygulamaya girerken yazacağın şifre. |
+| `AUTH_SECRET` | Oturum çerezini imzalayan rastgele anahtar. Üret: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `CONTEXT_MESSAGE_LIMIT` | `20` |
-
-> Not: `web` servisi Gemini kullanmaz ama hepsini iki servise de eklemek en kolayı.
 
 ## 5. Telegram webhook'unu kaydet
 

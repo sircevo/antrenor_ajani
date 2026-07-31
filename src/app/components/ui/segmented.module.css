@@ -1,0 +1,28 @@
+.group {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.segment {
+  flex: 1;
+  padding: 9px 4px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.selected {
+  background: var(--accent);
+  color: #0b0b0b;
+  font-weight: 600;
+}

@@ -10,6 +10,7 @@
  */
 
 import type { PrismaClient, Prisma } from "@prisma/client";
+import { startOfToday } from "@/lib/stats";
 
 export const LOG_WEIGHT = "log_weight";
 export const LOG_CALORIE_ENTRY = "log_calorie_entry";
@@ -331,10 +332,8 @@ async function handleLogCalorieEntry(prisma: PrismaClient, args: Record<string, 
     },
   });
 
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
   const todayEntries = await prisma.calorieEntry.findMany({
-    where: { createdAt: { gte: startOfDay } },
+    where: { createdAt: { gte: startOfToday() } },
     select: { calories: true },
   });
   const todayTotal = todayEntries.reduce((sum, e) => sum + e.calories, 0);
@@ -423,29 +422,26 @@ interface PlannedDayInput {
   exercises?: WorkoutExerciseInput[];
 }
 
-/** Parses a YYYY-MM-DD day into local midnight; null if unusable. */
+/**
+ * Parses a YYYY-MM-DD day into UTC midnight — a pure calendar-day selector
+ * for PlannedWorkout.date, independent of the server process's own timezone.
+ */
 function parsePlanDate(value: string | undefined): Date | null {
   if (!value) return null;
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
   if (!match) return null;
 
   const date = new Date(
-    Number(match[1]),
-    Number(match[2]) - 1,
-    Number(match[3])
+    Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
   );
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-/**
- * Formats a plan date back as YYYY-MM-DD in LOCAL time. `toISOString()` would
- * shift to UTC and, for any timezone ahead of it, report the previous day —
- * which would make the coach tell the user the wrong day.
- */
+/** Inverse of parsePlanDate — reads back the same UTC components. */
 function toDayKey(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
 
@@ -501,7 +497,7 @@ async function handleCreateWorkoutPlan(
   await prisma.$transaction([
     ...touched.map((date) => {
       const nextDay = new Date(date);
-      nextDay.setDate(nextDay.getDate() + 1);
+      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
       return prisma.plannedWorkout.deleteMany({
         where: { date: { gte: date, lt: nextDay } },
       });

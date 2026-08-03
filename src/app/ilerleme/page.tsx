@@ -7,6 +7,7 @@ import {
   dayKey,
   daysAgo,
   formatNumber,
+  formatTrDateKey,
   resolvePeriod,
   round1,
   startOfToday,
@@ -149,9 +150,7 @@ export default async function ProgressPage({
     if (key < dayKey(windowStart)) continue;
     if (!bestDay || total > bestDay.calories) {
       bestDay = {
-        label: new Date(`${key}T00:00:00`).toLocaleDateString("tr-TR", {
-          weekday: "long",
-        }),
+        label: formatTrDateKey(key, { weekday: "long" }),
         calories: total,
       };
     }

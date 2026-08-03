@@ -8,7 +8,7 @@
  */
 
 import type { PrismaClient } from "@prisma/client";
-import { dayKey, daysAgo, round1, startOfToday } from "@/lib/stats";
+import { dayKey, daysAgo, formatTrDate, round1, startOfToday } from "@/lib/stats";
 
 interface Exercise {
   name: string;
@@ -27,7 +27,7 @@ function formatExercises(exercises: Exercise[]): string {
 }
 
 function formatDay(date: Date): string {
-  return date.toLocaleDateString("tr-TR", {
+  return formatTrDate(date, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -41,7 +41,7 @@ function formatDay(date: Date): string {
 export async function buildLiveContext(prisma: PrismaClient): Promise<string | null> {
   const todayStart = startOfToday();
   const in10Days = new Date(todayStart);
-  in10Days.setDate(in10Days.getDate() + 10);
+  in10Days.setUTCDate(in10Days.getUTCDate() + 10);
 
   const [profile, todayEntries, plans, weights] = await Promise.all([
     prisma.styleProfile.findUnique({ where: { id: "singleton" } }),

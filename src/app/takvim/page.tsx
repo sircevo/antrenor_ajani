@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { dayKey, startOfToday } from "@/lib/stats";
+import { dayKey, formatTrDate, startOfToday } from "@/lib/stats";
 import { AppBar, Card, PageTitle, Screen, ui } from "@/app/components/ui";
 import styles from "./takvim.module.css";
 
@@ -18,7 +18,9 @@ interface Exercise {
 export default async function CalendarPage() {
   const start = startOfToday();
   const end = new Date(start);
-  end.setDate(end.getDate() + DAYS_SHOWN);
+  // start is a real UTC instant (Turkey midnight); UTC-date arithmetic on it
+  // stays correct no matter what timezone the server process itself runs in.
+  end.setUTCDate(end.getUTCDate() + DAYS_SHOWN);
 
   const planned = await prisma.plannedWorkout.findMany({
     where: { date: { gte: start, lt: end } },
@@ -32,7 +34,7 @@ export default async function CalendarPage() {
 
   const days = Array.from({ length: DAYS_SHOWN }, (_, i) => {
     const date = new Date(start);
-    date.setDate(date.getDate() + i);
+    date.setUTCDate(date.getUTCDate() + i);
     return { date, workout: byDay.get(dayKey(date)) };
   });
 
@@ -67,9 +69,9 @@ export default async function CalendarPage() {
             >
               <div className={styles.dayHead}>
                 <div className={styles.dateBlock}>
-                  <span className={styles.dayNum}>{date.getDate()}</span>
+                  <span className={styles.dayNum}>{date.getUTCDate()}</span>
                   <span className={styles.dayName}>
-                    {date.toLocaleDateString("tr-TR", { weekday: "short" })}
+                    {formatTrDate(date, { weekday: "short" })}
                   </span>
                 </div>
 

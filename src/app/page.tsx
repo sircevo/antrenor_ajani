@@ -6,6 +6,7 @@ import {
   dayKey,
   daysAgo,
   formatNumber,
+  formatTrDate,
   startOfToday,
 } from "@/lib/stats";
 import {
@@ -31,7 +32,7 @@ interface Exercise {
 export default async function TodayPage() {
   const todayStart = startOfToday();
   const tomorrow = new Date(todayStart);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
 
   const [planned, todayCalories, latestWeight, profile, recent] = await Promise.all([
     prisma.plannedWorkout.findFirst({
@@ -60,7 +61,7 @@ export default async function TodayPage() {
 
   const exercises = (planned?.exercises as unknown as Exercise[]) ?? [];
 
-  const today = new Date().toLocaleDateString("tr-TR", {
+  const today = formatTrDate(new Date(), {
     weekday: "long",
     day: "numeric",
     month: "long",
